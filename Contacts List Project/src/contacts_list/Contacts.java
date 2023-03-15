@@ -1,5 +1,8 @@
 package contacts_list;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Contacts {
 
     private String fName;
@@ -37,5 +40,17 @@ public class Contacts {
         this.fName = fName;
         this.lName = lName;
         this.phoneNum = phoneNum;
+    }
+
+    @Override
+    public String toString() {
+        return getfName() + ", " + getlName() + ", " + getPhoneNum();
+    }
+
+    public static boolean checkPhoneNumber(String phoneNumber) {
+        Pattern p = Pattern.compile("^(\\+\\d{1,3}( )+)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?[0-9a-zA-Z]{3,4}$");
+        Matcher m = p.matcher(phoneNumber);
+
+        return m.matches();
     }
 }
