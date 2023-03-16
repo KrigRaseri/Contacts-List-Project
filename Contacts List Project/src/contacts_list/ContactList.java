@@ -2,41 +2,20 @@ package contacts_list;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContactList {
 
-    private ArrayList<Contacts> contactsList;
+    private ArrayList<Contact> contactsList;
 
-    public ArrayList<Contacts> getContactsList() {
+    public ArrayList<Contact> getContactsList() {
         return new ArrayList<>(contactsList);
     }
 
-    public ContactList(ArrayList<Contacts> contactsList) {
+    public ContactList(ArrayList<Contact> contactsList) {
         this.contactsList = contactsList;
-    }
-
-    public void createContact(BufferedReader reader, ContactList cl) {
-        try {
-            System.out.println("Enter the name of the person:");
-            String fName = reader.readLine();
-            System.out.println("Enter the surname of the person:");
-            String lName = reader.readLine();
-            System.out.println("Enter the number:");
-            String phoneNum = reader.readLine();
-
-            if (!Contacts.checkPhoneNumber(phoneNum)) {
-                phoneNum = "[no number]";
-                System.out.println("Wrong number format!");
-            }
-
-            cl.contactsList.add(new Contacts(fName, lName, phoneNum));
-        }
-
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public int getContactsListSize() {
@@ -45,8 +24,24 @@ public class ContactList {
 
     public void printList(ContactList cl) {
         for (int i = 0; i < cl.getContactsListSize(); i++) {
-            System.out.println(i+1 + ". " + cl.getContactsList().get(i).toString());
+            System.out.println(i+1 + ". " + cl.getContactsList().get(i).getName());
         }
+    }
+
+    public void printInfo(BufferedReader reader, ContactList cList) {
+        try {
+            printList(cList);
+            System.out.print("Enter index to show info:  ");
+            cList.getContactsList().get(Integer.parseInt(reader.readLine()) - 1).printEntry();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void addContact(ContactList cl, Contact con) {
+        cl.contactsList.add(con);
     }
 
     public void removeEntry(BufferedReader reader, ContactList cList) {
@@ -67,36 +62,91 @@ public class ContactList {
             cList.printList(cList);
             System.out.print("Select a record: ");
             int record = Integer.parseInt(reader.readLine()) - 1;
-            System.out.println();
-            System.out.println("Select a field (name, surname, number): ");
 
-            switch (reader.readLine()) {
+            if (cList.getContactsList().get(record) instanceof ContactPerson) {
+                editEntryPerson(reader, cList, record);
+                System.out.println("The record updated!");
+
+            } else {
+                editEntryOrganization(reader, cList, record);
+                System.out.println("The record updated!");
+            }
+
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+    public void editEntryPerson(BufferedReader reader, ContactList cList, int listIndex) {
+        try {
+            System.out.println("Select a field (name, surname, birth, gender, number): ");
+            ContactPerson p = (ContactPerson) cList.getContactsList().get(listIndex);
+
+            switch (reader.readLine().toLowerCase()) {
                 case "name":
                     System.out.print("Enter name: ");
-                    cList.contactsList.get(record).setfName(reader.readLine());
+                    p.setfName(reader.readLine());
                     break;
 
                 case "surname":
                     System.out.print("Enter surname: ");
-                    cList.contactsList.get(record).setlName(reader.readLine());
+                    p.setlName(reader.readLine());
+                    break;
+
+                case "birth":
+                    System.out.print("Enter birthday: ");
+                    p.setBirthDate(Util.checkBirthday(reader.readLine()));
+                    break;
+
+                case "gender":
+                    System.out.print("Enter gender: ");
+                    p.setGender(Util.checkGender(reader.readLine()));
                     break;
 
                 case "number":
                     System.out.print("Enter number: ");
-                    String inp = reader.readLine();
-
-                    if (!Contacts.checkPhoneNumber(inp)) {
-                        inp= "[no number]";
-                        System.out.println("Wrong number format!");
-                    }
-
-                    cList.contactsList.get(record).setPhoneNum(inp);
+                    p.setPhoneNum(reader.readLine());
                     break;
 
                 default:
                     System.out.println("Invalid");
                     break;
             }
+
+            p.setEditTime(LocalDateTime.now());
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+
+    public void editEntryOrganization(BufferedReader reader, ContactList cList, int listIndex) {
+        try {
+            System.out.println("Select a field (address, number): ");
+            ContactOrganization o = (ContactOrganization) cList.getContactsList().get(listIndex);
+
+            switch (reader.readLine().toLowerCase()) {
+                 case "name":
+                    System.out.print("Enter name: ");
+                    o.setOrgName(reader.readLine());
+                    break;
+
+                case "address":
+                    System.out.print("Enter address: ");
+                    o.setOrgAddress(reader.readLine());
+                    break;
+
+                case "number":
+                    System.out.print("Enter number: ");
+                    o.setOrgPhoneNum(reader.readLine());
+                    break;
+
+                default:
+                    System.out.println("Invalid");
+                    break;
+            }
+            o.setEditTime(LocalDateTime.now());
+
         } catch (IOException e) {
             System.out.println(e);
         }
