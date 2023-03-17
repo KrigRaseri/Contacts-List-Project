@@ -5,3 +5,13 @@ public class Main {
         Menu.menu();
     }
 }
+
+/*
+TODO
+
+Edit search menu remove option to have a confirmation before deleting.
+Implement phone number check back in after project stage.
+Implement bday format check.
+Implement gender format check.
+Serialization?
+ */

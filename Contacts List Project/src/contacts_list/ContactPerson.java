@@ -119,7 +119,10 @@ public class ContactPerson implements Contact{
                 getfName(), getlName(), getBirthDate(), getGender(), getPhoneNum());
 
         System.out.println("Time created: " + getCreationTime() + "\nTime last edit: " + getEditTime());
+        System.out.println();
     }
+
+    
 }
 
 /*

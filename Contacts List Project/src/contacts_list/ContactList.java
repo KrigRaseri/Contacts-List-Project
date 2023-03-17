@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ContactList {
 
@@ -22,64 +23,47 @@ public class ContactList {
         return contactsList.size();
     }
 
-    public void printList(ContactList cl) {
-        for (int i = 0; i < cl.getContactsListSize(); i++) {
-            System.out.println(i+1 + ". " + cl.getContactsList().get(i).getName());
+    public void printList(ArrayList<Contact> cl) {
+        for (int i = 0; i < cl.size(); i++) {
+            System.out.println(i+1 + ". " + cl.get(i).getName());
         }
     }
 
     public void printInfo(BufferedReader reader, ContactList cList) {
         try {
-            printList(cList);
+            printList(cList.getContactsList());
             System.out.print("Enter index to show info:  ");
             cList.getContactsList().get(Integer.parseInt(reader.readLine()) - 1).printEntry();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void addContact(ContactList cl, Contact con) {
         cl.contactsList.add(con);
     }
 
-    public void removeEntry(BufferedReader reader, ContactList cList) {
-        try {
-            printList(cList);
-            System.out.print("Select a record: ");
-            int input = Integer.parseInt(reader.readLine()) - 1;
-            cList.contactsList.remove(input);
-            System.out.println("The record removed!");
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void removeEntry(ContactList cList, int entryIndex) {
+        cList.contactsList.remove(entryIndex);
+        System.out.println("The record removed!");
     }
 
-    public void editEntry(BufferedReader reader, ContactList cList) {
-        try {
-            cList.printList(cList);
-            System.out.print("Select a record: ");
-            int record = Integer.parseInt(reader.readLine()) - 1;
+    public void editEntry(BufferedReader reader, ContactList cList, int entryIndex) {
 
-            if (cList.getContactsList().get(record) instanceof ContactPerson) {
-                editEntryPerson(reader, cList, record);
-                System.out.println("The record updated!");
-
-            } else {
-                editEntryOrganization(reader, cList, record);
-                System.out.println("The record updated!");
-            }
-
-        } catch (IOException e) {
-            System.out.println(e);
+        if (cList.getContactsList().get(entryIndex) instanceof ContactPerson) {
+            editEntryPerson(reader, cList, entryIndex);
+        } else {
+            editEntryOrganization(reader, cList, entryIndex);
         }
+
+        System.out.println("Saved");
+        cList.getContactsList().get(entryIndex).printEntry();
     }
 
     public void editEntryPerson(BufferedReader reader, ContactList cList, int listIndex) {
         try {
-            System.out.println("Select a field (name, surname, birth, gender, number): ");
+            System.out.print("Select a field (name, surname, birth, gender, number): ");
             ContactPerson p = (ContactPerson) cList.getContactsList().get(listIndex);
 
             switch (reader.readLine().toLowerCase()) {
@@ -122,7 +106,7 @@ public class ContactList {
 
     public void editEntryOrganization(BufferedReader reader, ContactList cList, int listIndex) {
         try {
-            System.out.println("Select a field (address, number): ");
+            System.out.print("Select a field (address, number): ");
             ContactOrganization o = (ContactOrganization) cList.getContactsList().get(listIndex);
 
             switch (reader.readLine().toLowerCase()) {
