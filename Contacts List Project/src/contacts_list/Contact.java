@@ -6,4 +6,5 @@ public interface Contact {
    void printEntry();
    void createContact(BufferedReader reader);
    String getName();
+   String makeSearchable();
 }

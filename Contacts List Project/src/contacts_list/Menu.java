@@ -5,24 +5,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Objects;
 
-public interface Menu {
+public class Menu implements Runnable {
 
-    static void menu() {
+    @Override
+    public void run() {
+        menu();
+    }
+
+    public void menu() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            ContactList cList = new ContactList(new ArrayList<>());
+            ContactList cList = new ContactList(ContactSerialize.contactDeserialize());
             ContactFactory cf = new ContactFactory();
+
             while (true) {
                 System.out.print("[menu] Enter action (add, list, search, count, exit): ");
                 String input = reader.readLine();
-
                 switch(input) {
                     case "add":
                         System.out.print("Enter the type (person, organization): ");
                         Contact contact = cf.getContact(Util.inputTypeCheck(reader));
                         contact.createContact(reader);
                         cList.addContact(cList, contact);
+                        ContactSerialize.contactSerialize(cList.getContactsList());
                         System.out.println("The record added.\n");
                         continue;
 
@@ -55,40 +60,30 @@ public interface Menu {
             }
 
         } catch (IOException e) {
-            System.out.println(e);
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Search's through the list to find a contact, then gives options for the user. Calls menuEditEntry to edit a
-     * contact via the search option.
-     *
-     * @param cList ContactList object
+     * contact via the search option. First block Section fills lists shows the number of results. Second block checks
+     * for an int to parse and then prints the entry at that index, then calls menuEditEntry with that same index.
      */
     private static void menuSearch(BufferedReader reader, ContactList cList) {
         try {
             while (true) {
-                ArrayList<Contact> listCopy = new ArrayList<>();
-                System.out.print("Enter search query: ");
-                String searchTerm = reader.readLine();
-
-                for (int i = 0; i < cList.getContactsList().size(); i++) {
-                    if (cList.getContactsList().get(i).getName().toLowerCase().contains(searchTerm)) {
-                        listCopy.add(cList.getContactsList().get(i));
-                    }
-                }
-
-                System.out.printf("Found %d results:\n", listCopy.size());
-                cList.printList(listCopy);
+                ArrayList<String> searchable = new ArrayList<>(Util.fillSearchable(cList));
+                ArrayList<Contact> foundList = new ArrayList<>(Util.fillFoundList(reader, cList, searchable));
+                System.out.printf("Found %d results:\n", foundList.size());
+                cList.printList(foundList);
                 System.out.println();
 
                 System.out.print("[search] Enter action ([number], back, again): ");
                 String inp = reader.readLine().toLowerCase(Locale.ROOT);
-
-                if (inp.matches("[\\d]+")) {
-                    listCopy.get(Integer.parseInt(inp) - 1).printEntry();
-                    Contact contactToSearch = listCopy.get(Integer.parseInt(inp) - 1);
-                    menuEditEntry(reader, cList, cList.getContactsList().indexOf(contactToSearch));
+                if (inp.matches("\\d+")) {
+                    foundList.get(Integer.parseInt(inp) - 1).printEntry();
+                    menuEditEntry(reader, cList, cList.getContactsList()
+                            .indexOf(foundList.get(Integer.parseInt(inp) - 1)));
 
                 } else if (inp.equals("again")) {
                     continue;
@@ -134,7 +129,10 @@ public interface Menu {
                             System.out.println("No records to delete!");
                             continue;
                         }
-                        cList.removeEntry(cList, entryNum);
+
+                        if (Util.deleteConfirmation(reader)) {
+                            cList.removeEntry(cList, entryNum);
+                        }
                         System.out.println();
                         break;
 
@@ -161,12 +159,13 @@ public interface Menu {
                 System.out.print("[list] Enter action ([number], back): ");
                 String input = reader.readLine().toLowerCase(Locale.ROOT);
 
-                if (input.matches("[\\d]+")) {
+                if (input.matches("\\d+")) {
                     cList.getContactsList().get(Integer.parseInt(input) - 1).printEntry();
                     menuEditEntry(reader, cList, Integer.parseInt(input) - 1);
 
                 } else if (input.equals("back")) {
                     break;
+
                 } else {
                     System.out.println("Invalid input");
                     continue;

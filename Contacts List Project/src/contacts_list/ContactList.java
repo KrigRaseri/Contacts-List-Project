@@ -4,25 +4,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 public class ContactList {
-
+    //Fields
     private ArrayList<Contact> contactsList;
 
-    public ArrayList<Contact> getContactsList() {
-        return new ArrayList<>(contactsList);
-    }
-
+    //Constructor
     public ContactList(ArrayList<Contact> contactsList) {
         this.contactsList = contactsList;
+    }
+
+    //Getter and sort of getter
+    public ArrayList<Contact> getContactsList() {
+        return new ArrayList<>(contactsList);
     }
 
     public int getContactsListSize() {
         return contactsList.size();
     }
 
+    //================================== Methods for ContactList printing ==============================================
     public void printList(ArrayList<Contact> cl) {
         for (int i = 0; i < cl.size(); i++) {
             System.out.println(i+1 + ". " + cl.get(i).getName());
@@ -40,28 +41,38 @@ public class ContactList {
         }
     }
 
+    //=================================== Methods for ContactList editing ==============================================
+
     public void addContact(ContactList cl, Contact con) {
         cl.contactsList.add(con);
     }
 
     public void removeEntry(ContactList cList, int entryIndex) {
         cList.contactsList.remove(entryIndex);
+        ContactSerialize.contactSerialize(cList.getContactsList());
         System.out.println("The record removed!");
     }
 
     public void editEntry(BufferedReader reader, ContactList cList, int entryIndex) {
-
         if (cList.getContactsList().get(entryIndex) instanceof ContactPerson) {
             editEntryPerson(reader, cList, entryIndex);
         } else {
             editEntryOrganization(reader, cList, entryIndex);
         }
 
+        ContactSerialize.contactSerialize(cList.getContactsList());
         System.out.println("Saved");
         cList.getContactsList().get(entryIndex).printEntry();
     }
 
-    public void editEntryPerson(BufferedReader reader, ContactList cList, int listIndex) {
+    //================================= Methods that are called by editEntry ===========================================
+
+    /**
+     * User chooses which field of the ContactPerson object to edit.
+     *
+     * @param listIndex is the index of the ContactList entry to be edited.
+     * */
+    private void editEntryPerson(BufferedReader reader, ContactList cList, int listIndex) {
         try {
             System.out.print("Select a field (name, surname, birth, gender, number): ");
             ContactPerson p = (ContactPerson) cList.getContactsList().get(listIndex);
@@ -89,7 +100,7 @@ public class ContactList {
 
                 case "number":
                     System.out.print("Enter number: ");
-                    p.setPhoneNum(reader.readLine());
+                    p.setPhoneNum(Util.checkPhoneNumber(reader.readLine()));
                     break;
 
                 default:
@@ -99,12 +110,16 @@ public class ContactList {
 
             p.setEditTime(LocalDateTime.now());
         } catch (IOException e) {
-            System.out.println(e);
+            throw new RuntimeException(e);
         }
     }
 
-
-    public void editEntryOrganization(BufferedReader reader, ContactList cList, int listIndex) {
+    /**
+     * User chooses which field of the ContactOrganization object to edit.
+     *
+     * @param listIndex is the index of the ContactList entry to be edited.
+     * */
+    private void editEntryOrganization(BufferedReader reader, ContactList cList, int listIndex) {
         try {
             System.out.print("Select a field (address, number): ");
             ContactOrganization o = (ContactOrganization) cList.getContactsList().get(listIndex);
@@ -132,7 +147,7 @@ public class ContactList {
             o.setEditTime(LocalDateTime.now());
 
         } catch (IOException e) {
-            System.out.println(e);
+            throw new RuntimeException(e);
         }
     }
 }

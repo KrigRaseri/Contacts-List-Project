@@ -2,12 +2,12 @@ package contacts_list;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ContactPerson implements Contact{
+public class ContactPerson implements Contact, Serializable {
 
+    //Fields
     private String fName;
     private String lName;
     private String birthDate;
@@ -16,11 +16,14 @@ public class ContactPerson implements Contact{
     private LocalDateTime creationTime;
     private LocalDateTime editTime;
 
+    //Default constructor
+    public ContactPerson() {}
+
+    //Getters and setters.
     @Override
     public String getName() {
         return getfName() + " " + getlName();
     }
-
 
     public LocalDateTime getCreationTime() {return creationTime;}
 
@@ -70,20 +73,9 @@ public class ContactPerson implements Contact{
         this.phoneNum = phoneNum;
     }
 
-    public ContactPerson() {
-    }
-
-    public ContactPerson(String fName, String lName, String birthDate, String gender, String phoneNum) {
-        this.fName = fName;
-        this.lName = lName;
-        this.birthDate = birthDate;
-        this.gender = gender;
-        this.phoneNum = phoneNum;
-    }
-
+    //Creates person contact with all relevant fields.
     @Override
     public void createContact(BufferedReader reader) {
-        //ContactPerson con = (ContactPerson) cont;
         try {
             System.out.print("Enter the name of the person: ");
             this.setfName(reader.readLine());
@@ -94,21 +86,16 @@ public class ContactPerson implements Contact{
             System.out.print("Enter the gender (M, F): ");
             this.setGender(Util.checkGender(reader.readLine()));
             System.out.print("Enter the number: ");
-            this.setPhoneNum(reader.readLine());
+            this.setPhoneNum(Util.checkPhoneNumber(reader.readLine()));
             this.setCreationTime(LocalDateTime.now());
             this.setEditTime(LocalDateTime.now());
-
-
-            /*if (!ContactPerson.checkPhoneNumber(phoneNum)) {
-                this.phoneNum = "[no number]";
-                System.out.println("Wrong number format!");
-            } */
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    //Prints all the ContactPerson object fields.
     @Override
     public void printEntry() {
         System.out.printf("Name: %s\n" +
@@ -122,25 +109,9 @@ public class ContactPerson implements Contact{
         System.out.println();
     }
 
-    
-}
-
-/*
-    public static boolean checkPhoneNumber(String phoneNumber) {
-        Pattern p = Pattern.compile("^(\\+\\d{1,3}( )+)?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?((\\(\\d{1,3}\\))|\\d{1,3})[- .]?\\d{3,4}[- .]?[0-9a-zA-Z]{3,4}$");
-        Pattern p2 = Pattern.compile("^(\\+?\\(?\\d{1,3}\\)?)?([ -]?\\(?[\\w\\d]{2,2}\\)?)?([ -]?\\(?[\\w\\d]{2,4}\\)?)?([ -]?(\\(?[\\w\\d]{2,4}\\)?))?$");
-        Matcher m = p.matcher(phoneNumber);
-        if (phoneNumber.equals("+(123) (123)")) {return false;}
-
-        if (m.matches()) {
-            return true;
-        }
-        else if (phoneNumber.equals("+(phone)") || phoneNumber.equals("+(another)")) {
-            return true;
-        }
-        else {
-            Matcher m2 = p2.matcher(phoneNumber);
-            return m2.matches();
-        }
+    //Grabs all the ContactPerson object fields and returns them as one entire string for the purpose of searching.
+    @Override
+    public String makeSearchable() {
+        return getName() + getBirthDate() + getGender() + getPhoneNum();
     }
- */
+}
